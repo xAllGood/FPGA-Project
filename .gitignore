@@ -1,0 +1,28 @@
+### Vivado log and journal files
+
+*.log
+*.jou
+*.str 
+
+### Vivado working directories
+
+/.Xil/
+/hd_visual/ 
+
+### Synthesis, implementation, and simulation outputs
+
+*.runs/
+*.sim/
+*.ip_user_files/
+*.hw/
+*.cache/ 
+
+### SDK/Vitis generated files (if applicable)
+
+*.sdk/
+*.vitis/ 
+
+### Backup and temporary files
+
+*~
+*.bak
