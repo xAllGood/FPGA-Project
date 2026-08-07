@@ -9,6 +9,7 @@
 
 /.Xil/
 /hd_visual/ 
+/_ide/
 
 ### Synthesis, implementation, and simulation outputs
 
@@ -27,3 +28,4 @@
 
 *~
 *.bak
+_ide
