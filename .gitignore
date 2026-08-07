@@ -1,9 +1,10 @@
 ### Vivado log and journal files
-
+*.xpr
 *.log
 *.jou
 *.str 
-
+*.cache
+*.venv
 ### Vivado working directories
 
 /.Xil/
