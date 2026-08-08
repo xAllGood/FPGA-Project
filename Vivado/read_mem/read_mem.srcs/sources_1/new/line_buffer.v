@@ -21,6 +21,9 @@
 
 
 module line_buffer(
-
+input clk,
+input rst,
+input data_valid,
+input 
     );
 endmodule
