@@ -1,111 +1,104 @@
 `timescale 1ns / 1ps
 
-module tb_read_mem();
+module tb_top();
+
+    // Module Parameters matching top.v
+    parameter WIDTH      = 377;
+    parameter HEIGHT     = 193; 
+    parameter DATA_WIDTH = 8;
+
+    localparam TOTAL_PIXELS = WIDTH * HEIGHT;
+    localparam ADDR_WIDTH   = $clog2(TOTAL_PIXELS);
+    
+    // Hardware Latency Pipeline Delay:
+    // Line Buffer 1 (2*WIDTH + 1) + Gaussian (1) + Line Buffer 2 (2*WIDTH + 1) + Sobel NMS (2*WIDTH + 2)
+    localparam STAGE_DELAY  = (6 * WIDTH) + 4; 
+    localparam TOTAL_CYCLES = STAGE_DELAY + TOTAL_PIXELS;
+
+    // Testbench Signals
     reg clk;
     reg rst;
-    reg [21:0] data_in;                  
-    wire [7:0] data_out;
-    
-    // Interconnect Wires for Gaussian Stage
-    wire [7:0] pixel_in, r1, r2;
-    wire [7:0] blurred_out;
-    
-    // Interconnect Wires for Sobel Stage
-    wire [7:0] blur_pixel_in, blur_r1, blur_r2;
-    wire [7:0] edge_pixel;
-    wire [7:0] final_pixel_out; // Added: Output of bitwise inverter
+    reg [ADDR_WIDTH-1:0] data_in;
+    wire [DATA_WIDTH-1:0] final_pixel_out;
 
     integer i;
     integer filehandle;
+    integer written_pixels;
 
-    // 1. Core Image RAM Reader
-    read_mem uut (
+    // Instantiate Top Module
+    top #(
+        .WIDTH(WIDTH),
+        .HEIGHT(HEIGHT),
+        .DATA_WIDTH(DATA_WIDTH)
+    ) uut (
+        .clk(clk),
+        .rst(rst),
         .data_in(data_in),
-        .clk(clk),
-        .rst(rst),
-        .data_out(data_out)
-    );
-        
-    // 2. Line Buffer 1: Delays Raw Pixels to create 3 Rows for Gaussian
-    line_buffer uut1 (
-        .clk(clk),
-        .rst(rst),
-        .pixel_in(data_out),
-        .row1_pixel(r1),
-        .row2_pixel(r2),
-        .row3_pixel(pixel_in)
+        .final_pixel_out(final_pixel_out)
     );
 
-    // 3. Gaussian 3x3 Module
-    gaussian_3x3 uut2 (
-        .clk(clk),
-        .rst(rst),
-        .row1_pixel(r1), 
-        .row2_pixel(r2), 
-        .row3_pixel(pixel_in),
-        .blurred_out(blurred_out)
-    );
-    
-    // 4. Added: Line Buffer 2 (Delays Blurred Pixels to create 3 Rows for Sobel)
-    line_buffer uut3 (
-        .clk(clk),
-        .rst(rst),
-        .pixel_in(blurred_out), // Hooked directly to the output of the Gaussian block
-        .row1_pixel(blur_r1),
-        .row2_pixel(blur_r2),
-        .row3_pixel(blur_pixel_in)
-    );
-
-    // 5. Added: Sobel 3x3 Module (Thresholds 35, 95)
-    sobel_3x3 uut4 (
-        .clk(clk),
-        .rst(rst),
-        .row1_blur(blur_r1),
-        .row2_blur(blur_r2),
-        .row3_blur(blur_pixel_in),
-        .edge_out(edge_pixel)
-    );
-    
-    // 6. Added: Bitwise Inverter Node (Replaces OpenCV c.bitwise_not)
-    assign final_pixel_out = ~edge_pixel;
-        
-    // 100 MHz Oscillator Configuration Loop
-    always begin
-        #5 clk = ~clk;
-    end
+    // 100 MHz Clock Generation (10ns Period)
+    always #5 clk = ~clk;
 
     initial begin
-        clk = 0;
-        data_in = 0;
-        rst = 1; 
+        // Signal Initialization
+        clk            = 0;
+        data_in        = 0;
+        rst            = 1;
+        written_pixels = 0;
 
-        $display("Simulation started - Full Cascaded Pipeline Active");
-        filehandle = $fopen("D:/College/Projects/VLSI_Project/Softwares/output/vivado/Hari3.txt", "w");
-        
-        if(filehandle == 0) begin
-            $display("Error opening file!");
+        // Open Output File
+        filehandle = $fopen("D:/College/Projects/VLSI_Project/Softwares/output/vivado/Hari4.txt", "w");
+
+        if (filehandle == 0) begin
+            $display("[ERROR] Could not open output text file for writing!");
             $finish;
         end
-        
-        #10;
-        rst = 0; // Release system master reset
-        #10;     
 
-        // Loop extended to 2,566,406 cycles to account for full multi-stage pipeline depth
-        for(i = 0; i < 2566406; i = i + 1) begin
-            data_in = i;
+        // Apply Reset Pulse
+        #20;
+        rst = 0; 
+        @(posedge clk);
+
+        // =====================================================================
+        // FRAME 1: Histogram Population & Otsu Threshold Calculation Pass
+        // =====================================================================
+        $display("[INFO] Frame 1 Started: Generating Otsu Histogram...");
+        for (i = 0; i < TOTAL_PIXELS; i = i + 1) begin
+            data_in <= i;
             @(posedge clk);
-            #1;
+        end
+
+        // VSYNC Trigger State: Reset data_in and allow state machine to compute threshold
+        data_in <= 0;
+        $display("[INFO] Computing optimal Otsu threshold...");
+        repeat(300) @(posedge clk); // Wait for the COMPUTE state machine in u_otsu
+
+        // =====================================================================
+        // FRAME 2: Active Image Pipeline & File Generation
+        // =====================================================================
+        $display("[INFO] Frame 2 Started: Applying threshold, Gaussian blur, and NMS edge detection...");
+        
+        for (i = 0; i < TOTAL_CYCLES; i = i + 1) begin
             
-            // System warmup requires exactly 6406 clock cycles 
-            // Saving output data beyond this threshold strips out all raw garbage entries!
-            if (i >= 6406 && i < 2566406) begin
-                $fwrite(filehandle, "%h\n", final_pixel_out); // Changed: Now writing the inverted edge pixels
+            // Feed image addresses during the valid image window
+            if (i < TOTAL_PIXELS)
+                data_in <= i;
+            else
+                data_in <= 0; // Clamp address during pipeline flushing
+
+            @(posedge clk);
+
+            // Record pixel data once the hardware pipeline fills
+            if (i >= STAGE_DELAY && written_pixels < TOTAL_PIXELS) begin
+                $fwrite(filehandle, "%02h\n", final_pixel_out);
+                written_pixels = written_pixels + 1;
             end
         end
-        
+
+        // Cleanup and Exit
         $fclose(filehandle);
-        $display("Simulation Completed successfully. Exactly 2,560,000 edge-detected pixels saved.");
+        $display("[SUCCESS] Simulation Complete! Written %0d valid pixels to file.", written_pixels);
         $finish;
     end
 

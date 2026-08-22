@@ -2,7 +2,7 @@ import cv2 as c
 from PIL import Image
 import numpy as np
 
-img_path=r'/mnt/c/Users/harim/Pictures/hari3.jpeg'
+img_path=r'/mnt/c/Users/harim/Pictures/hari7.jpeg'
 
 img = c.imread(img_path)
 h ,w = img.shape[:2]
@@ -30,7 +30,9 @@ invert = c.bitwise_not(deno)
 ## normalized for FPGA
 
 c.imshow('final out',invert)
-c.imwrite('/mnt/d/College/Projects/VLSI_Project/Softwares/OpenCV/output/python/hari4canny.jpeg',invert)
+output_path =r'/mnt/d/College/projects/vlsi_project/softwares/output/python/hari7otsu.jpeg'
+c.imwrite(output_path,invert)
+
 
 c.waitKey(0)
 c.destroyAllWindows()
