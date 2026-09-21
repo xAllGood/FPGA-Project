@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-image_path = '/mnt/c/Users/harim/Pictures/hari7.jpeg'
+image_path = '/mnt/c/Users/harim/Pictures/hari.png'
 
 # 1. Force load directly as grayscale (1 channel)
 gray_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -16,7 +16,7 @@ print(f"Verified Image Shape: {gray_image.shape}")
 pixels = gray_image.ravel()
 
 # 4. Write hex values to memory file
-with open('image.mem1', 'w') as f:
+with open('/mnt/d/College/Projects/VLSI_Project/Softwares/OpenCV/python/mem/image7.mem', 'w') as f:
     for pix in pixels:
         f.write(f"{pix:02x}\n")
 

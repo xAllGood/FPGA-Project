@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module line_buffer #(
     parameter WIDTH      = 377,
     parameter PTR_WIDTH  = 9,
@@ -11,8 +13,8 @@ module line_buffer #(
     output wire [DATA_WIDTH-1:0] row3_pixel
 );
 
-    reg [DATA_WIDTH-1:0] lb1 [0:WIDTH-1];
-    reg [DATA_WIDTH-1:0] lb2 [0:WIDTH-1];
+    (* ram_style = "block" *) reg [DATA_WIDTH-1:0] lb1 [0:WIDTH-1];
+    (* ram_style = "block" *) reg [DATA_WIDTH-1:0] lb2 [0:WIDTH-1];
 
     reg [PTR_WIDTH-1:0]  write_ptr;
     reg [DATA_WIDTH-1:0] r1_reg, r2_reg;
@@ -23,20 +25,20 @@ module line_buffer #(
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            write_ptr <= {PTR_WIDTH{1'b0}};
-            r2_reg    <= {DATA_WIDTH{1'b0}};
-            r1_reg    <= {DATA_WIDTH{1'b0}};
+            write_ptr <= 0;
+            r2_reg    <= 0;
+            r1_reg    <= 0;
         end else begin
-            r2_reg <= lb1[write_ptr];
-            r1_reg <= lb2[write_ptr];
+            // Read previous values at current pointer before overwriting
+            r2_reg <= lb2[write_ptr];
+            r1_reg <= lb1[write_ptr];
 
+            // Cascade incoming pixel through line buffers sequentially
             lb1[write_ptr] <= pixel_in;
-            lb2[write_ptr] <= r2_reg;
+            lb2[write_ptr] <= r1_reg;
 
-            if (write_ptr == WIDTH - 1)
-                write_ptr <= {PTR_WIDTH{1'b0}};
-            else
-                write_ptr <= write_ptr + 1'b1;
+            write_ptr <= (write_ptr == WIDTH - 1) ? 0 : write_ptr + 1'b1;
         end
     end
+
 endmodule

@@ -2,30 +2,30 @@
 *.xpr
 *.log
 *.jou
-*.str 
+*.str
 *.cache/
-*.venv
-### Vivado working directories
+.venv/
+*.venv/
 
-/.Xil/
-/hd_visual/ 
-/_ide/
+### Vivado working directories
+.Xil/
+Xil/
+hd_visual/
+_ide/
+OpenCV/python/data/
+OpenCV/python/.venv/
 
 ### Synthesis, implementation, and simulation outputs
-
 *.runs/
 *.sim/
 *.ip_user_files/
 *.hw/
-*.cache/ 
 
 ### SDK/Vitis generated files (if applicable)
-
 *.sdk/
-*.vitis/ 
+*.vitis/
 
 ### Backup and temporary files
-
 *~
 *.bak
 *._ide/
