@@ -4,7 +4,7 @@ module top #(
     parameter WIDTH         = 377,
     parameter HEIGHT        = 193,
     parameter DATA_WIDTH    = 8,
-    parameter THRESHOLD     = 130,
+    parameter THRESHOLD     = 110, // Tune between 90-130 for desired stroke thickness
     parameter LOCATION      = "image.mem",
     parameter CODEBOOK_FILE = "codebook.mem"
 )(
@@ -22,13 +22,12 @@ module top #(
 
     // Hardware Pipeline Wires
     wire [DATA_WIDTH-1:0] raw_data;
+    wire [DATA_WIDTH-1:0] raw_data_inverted;
     wire [DATA_WIDTH-1:0] r1, r2, r3;
     wire [DATA_WIDTH-1:0] blurred_out;
-    wire [DATA_WIDTH-1:0] blur_r1, blur_r2, blur_r3;
-    wire [DATA_WIDTH-1:0] nms_edge_pixel;
-    wire [DATA_WIDTH-1:0] skeleton_pixel;
+    reg  [DATA_WIDTH-1:0] solid_pixel_reg;
 
-    // Memory Reader
+    // 1. Memory Reader
     read_mem #(
         .TOTAL_PIXELS(TOTAL_PIXELS),
         .ADDR_WIDTH(ADDR_WIDTH),
@@ -41,31 +40,52 @@ module top #(
         .data_out(raw_data)
     );
 
-    // Front-End Spatial Processing Chain
-    line_buffer #(.WIDTH(WIDTH), .PTR_WIDTH(PTR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) u_line_buf1 (
-        .clk(clk), .rst(rst), .pixel_in(raw_data), .row1_pixel(r1), .row2_pixel(r2), .row3_pixel(r3)
+    // Invert polarity: converts black text on white background -> white text on black background
+    assign raw_data_inverted = ~raw_data;
+
+    // 2. Gaussian Smoothing Window
+    line_buffer #(
+        .WIDTH(WIDTH), 
+        .PTR_WIDTH(PTR_WIDTH), 
+        .DATA_WIDTH(DATA_WIDTH)
+    ) u_line_buf1 (
+        .clk(clk), 
+        .rst(rst), 
+        .pixel_in(raw_data_inverted), 
+        .row1_pixel(r1), 
+        .row2_pixel(r2), 
+        .row3_pixel(r3)
     );
 
-    gaussian_3x3 #(.DATA_WIDTH(DATA_WIDTH)) u_gaussian (
-        .clk(clk), .rst(rst), .row1_pixel(r1), .row2_pixel(r2), .row3_pixel(r3), .blurred_out(blurred_out)
+    gaussian_3x3 #(
+        .DATA_WIDTH(DATA_WIDTH)
+    ) u_gaussian (
+        .clk(clk), 
+        .rst(rst), 
+        .row1_pixel(r1), 
+        .row2_pixel(r2), 
+        .row3_pixel(r3), 
+        .blurred_out(blurred_out)
     );
 
-    line_buffer #(.WIDTH(WIDTH), .PTR_WIDTH(PTR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) u_line_buf2 (
-        .clk(clk), .rst(rst), .pixel_in(blurred_out), .row1_pixel(blur_r1), .row2_pixel(blur_r2), .row3_pixel(blur_r3)
-    );
+    // 3. Direct Threshold Binarization (Generates solid white characters on black background)
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            solid_pixel_reg <= {DATA_WIDTH{1'b0}};
+        end else begin
+            if (blurred_out >= THRESHOLD) begin
+                solid_pixel_reg <= 8'hFF; // Solid foreground
+            end else begin
+                solid_pixel_reg <= 8'h00; // Background
+            end
+        end
+    end
 
-    sobel_3x3 #(.DATA_WIDTH(DATA_WIDTH), .WIDTH(WIDTH), .PTR_WIDTH(PTR_WIDTH), .THRESHOLD(THRESHOLD)) u_sobel (
-        .clk(clk), .rst(rst), .row1_blur(blur_r1), .row2_blur(blur_r2), .row3_blur(blur_r3), .edge_out(nms_edge_pixel)
-    );
-
-    thinning_3x3 #(.DATA_WIDTH(DATA_WIDTH), .WIDTH(WIDTH), .PTR_WIDTH(PTR_WIDTH)) u_thinning (
-        .clk(clk), .rst(rst), .edge_in(nms_edge_pixel), .thin_out(skeleton_pixel)
-    );
-
-    assign final_pixel_out = skeleton_pixel;
+    // Route solid binarized image directly to final output
+    assign final_pixel_out = solid_pixel_reg;
 
     // ------------------------------------------------------------------------
-    // Continuous Real-Time Column Accumulation Logic
+    // Continuous Real-Time Column Accumulation & Downstream HMM Logic
     // ------------------------------------------------------------------------
     reg [HEIGHT-1:0] col_shift_reg [0:WIDTH-1];
     reg [$clog2(WIDTH)-1:0] x_cnt;
@@ -75,7 +95,6 @@ module top #(
     reg col_ready_pulse;
     reg [HEIGHT-1:0] active_col_pixels;
 
-    // Minimum pipeline delay before valid skeleton pixels reach thin_out
     localparam MIN_DELAY = (2 * WIDTH) + 10;
 
     always @(posedge clk or posedge rst) begin
@@ -90,8 +109,7 @@ module top #(
                 valid_counter <= valid_counter + 1'b1;
             end
 
-            // Accumulate spatial pixels into column buffer across streaming rows
-            col_shift_reg[x_cnt][y_cnt] <= (skeleton_pixel == 8'hFF);
+            col_shift_reg[x_cnt][y_cnt] <= (solid_pixel_reg == 8'hFF);
 
             if (x_cnt == WIDTH - 1) begin
                 x_cnt <= 0;
@@ -104,7 +122,6 @@ module top #(
                 x_cnt <= x_cnt + 1'b1;
             end
 
-            // Emit valid column feature triggers on every row pulse once image is loaded
             if (valid_counter >= MIN_DELAY) begin
                 active_col_pixels <= col_shift_reg[x_cnt];
                 col_ready_pulse   <= 1'b1;
@@ -114,7 +131,7 @@ module top #(
         end
     end
 
-    // HMM Feature Extractor & Vector Quantizer Modules
+    // Feature Extractor & Vector Quantizer Modules
     wire [5:0] feature_vector;
 
     column_feature_extractor #(

@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-image_path = '/mnt/c/Users/harim/Pictures/hari.png'
+image_path = '/mnt/c/Users/harim/Pictures/hari7.png'
 
 # 1. Force load directly as grayscale (1 channel)
 gray_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)

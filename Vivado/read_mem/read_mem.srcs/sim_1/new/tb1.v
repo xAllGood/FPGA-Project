@@ -2,8 +2,8 @@
 
 module tb_top();
 
-    parameter WIDTH         = 377; 
-    parameter HEIGHT        = 193; 
+    parameter WIDTH         = 131; 
+    parameter HEIGHT        = 78; 
     parameter DATA_WIDTH    = 8;
     parameter THRESHOLD     = 30;
     parameter LOCATION      = "D:/College/Projects/VLSI_Project/Softwares/OpenCV/python/mem/image7.mem"; 
@@ -75,6 +75,8 @@ module tb_top();
 
             if (i >= STAGE_DELAY && i < (STAGE_DELAY + TOTAL_PIXELS)) begin
                 $fwrite(filehandle, "%h\n", final_pixel_out);
+    // Add this for live waveform debugging:
+                $display("i = %0d, data_in = %0d, final_pixel_out = %02h", i, data_in, final_pixel_out);
             end
 
             // Monitor and record valid generated HMM symbols
