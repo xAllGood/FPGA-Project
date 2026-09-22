@@ -13,7 +13,8 @@ Xil/
 hd_visual/
 _ide/
 OpenCV/python/data/
-OpenCV/python/.venv/
+OpenCV/python/tf_env/
+OpenCV/python/iam-handwritten-forms-dataset/
 
 ### Synthesis, implementation, and simulation outputs
 *.runs/

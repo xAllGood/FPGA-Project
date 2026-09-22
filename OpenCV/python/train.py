@@ -1,174 +1,105 @@
+"""
+train.py
+
+Trains the same CNN architecture as PuravG/EMNIST-Classifier's
+"EMNIST Classifier Final.ipynb" notebook, but as a plain script you run
+locally, with relative save paths instead of the original author's
+hardcoded macOS paths.
+
+Usage:
+    pip install -r requirements.txt
+    python train.py --epochs 20 --batch-size 1024 --dataset byclass
+
+Outputs (into ./model/):
+    model/emnist_cnn.keras      -> native Keras format (recommended)
+    model/emnist_cnn.h5         -> legacy H5 format
+    model/saved_model/          -> TF SavedModel dir (for tfjs / TF Serving)
+"""
+
+import argparse
 import os
-import json
-import joblib
+
 import numpy as np
-from hmmlearn import hmm
-import sklearn.datasets # Fallback dummy generator if emnist is not installed
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from emnist import extract_training_samples, extract_test_samples
 
-# ==========================================
-# 1. Pipeline Configuration
-# ==========================================
-CONFIG = {
-    "num_states": 5,
-    "num_features": 4,
-    "q_scale": 256,         # Q8.8 fixed-point format (2^8 = 256)
-    "prob_floor": 1e-12,     # Zero-probability floor before log2
-    "n_classes": 26,         # 26 upper-case EMNIST character classes ('A'-'Z')
-    "n_samples_per_class": 100
-}
 
-OUTPUT_DIR = "./output_weights"
-MEM_SUBDIR = os.path.join(OUTPUT_DIR, "mem_files")
+def build_model(num_classes: int) -> tf.keras.Model:
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32, (3, 3), activation="relu",
+                                input_shape=(28, 28, 1), padding="same"),
+        tf.keras.layers.MaxPooling2D((2, 2)),
 
-CLASSES = [chr(i) for i in range(ord('A'), ord('A') + CONFIG["n_classes"])]
+        tf.keras.layers.Conv2D(64, (3, 3), activation="relu"),
+        tf.keras.layers.MaxPooling2D((2, 2)),
 
-# ==========================================
-# 2. Fixed-Point & Quantization Helpers
-# ==========================================
-def float_to_fixed_log(prob_matrix, scale=256, floor=1e-12):
-    """
-    Converts probabilities to Q8.8 fixed-point log-domain costs:
-    Cost = -log2(P) * 256
-    """
-    clipped = np.clip(prob_matrix, floor, 1.0)
-    log_costs = -np.log2(clipped) * scale
-    fixed_costs = np.round(log_costs).astype(np.uint16)
-    return fixed_costs
+        tf.keras.layers.Conv2D(128, (3, 3), activation="relu"),
+        tf.keras.layers.MaxPooling2D((2, 2)),
 
-def create_left_to_right_mask(n_states):
-    """
-    Generates left-to-right topology: self-loops and single-step forward jumps only.
-    """
-    start_prob = np.zeros(n_states)
-    start_prob[0] = 1.0  # Force start at State 0
+        tf.keras.layers.Dropout(0.2),
 
-    trans_mat = np.zeros((n_states, n_states))
-    for i in range(n_states):
-        if i < n_states - 1:
-            trans_mat[i, i] = 0.5
-            trans_mat[i, i + 1] = 0.5
-        else:
-            trans_mat[i, i] = 1.0  # Terminal state self-loop
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(256, activation="relu"),
+        tf.keras.layers.Dense(128, activation="relu"),
+        tf.keras.layers.Dense(num_classes, activation="softmax"),
+    ])
+    return model
 
-    return start_prob, trans_mat
 
-# ==========================================
-# 3. Dummy Data Generator (Replace with EMNIST)
-# ==========================================
-def load_emnist_features(config):
-    """
-    Generates structured dummy feature sequences simulating handwritten characters.
-    Replace this loader with your actual EMNIST preprocessed feature data.
-    """
-    np.random.seed(42)
-    dataset = {}
-    for label in CLASSES:
-        sequences = []
-        for _ in range(config["n_samples_per_class"]):
-            # Simulating sequential feature trajectory over time across 5 states
-            seq_len = np.random.randint(12, 20)
-            seq = np.random.randn(seq_len, config["num_features"]) + ord(label) % 5
-            sequences.append(seq)
-        dataset[label] = sequences
-    return dataset
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dataset", default="byclass",
+                     choices=["byclass", "bymerge", "balanced", "letters", "digits", "mnist"],
+                     help="Which EMNIST split to train on (byclass = 62 classes, matches original repo).")
+    ap.add_argument("--epochs", type=int, default=20)
+    ap.add_argument("--batch-size", type=int, default=1024)
+    ap.add_argument("--out-dir", default="model")
+    args = ap.parse_args()
 
-# ==========================================
-# 4. HMM Training Loop
-# ==========================================
-def train_hmm_models(dataset, config):
-    models = {}
-    start_prob, initial_trans = create_left_to_right_mask(config["num_states"])
+    os.makedirs(args.out_dir, exist_ok=True)
 
-    print(f"Training HMMs for {len(dataset)} classes...")
+    print(f"Downloading/loading EMNIST '{args.dataset}' split ...")
+    train_images, train_labels = extract_training_samples(args.dataset)
+    test_images, test_labels = extract_test_samples(args.dataset)
+    num_classes = int(max(train_labels.max(), test_labels.max())) + 1
+    print(f"train: {train_images.shape}, test: {test_images.shape}, classes: {num_classes}")
 
-    for label, seq_list in dataset.items():
-        # Concatenate sequences for hmmlearn fit interface
-        X = np.concatenate(seq_list)
-        lengths = [len(s) for s in seq_list]
+    train_images = tf.keras.utils.normalize(train_images, axis=1)
+    test_images = tf.keras.utils.normalize(test_images, axis=1)
+    train_images = np.expand_dims(train_images, axis=3)
+    test_images = np.expand_dims(test_images, axis=3)
 
-        # Initialize Gaussian HMM with strict topology
-        model = hmm.GaussianHMM(
-            n_components=config["num_states"],
-            covariance_type="diag",
-            n_iter=50,
-            tol=1e-2,
-            params="mc",       # Update Means and Covariances only; keep transmat frozen
-            init_params="mc",
-            random_state=42
-        )
+    train_datagen = ImageDataGenerator(rotation_range=15, width_shift_range=0.10, height_shift_range=0.10)
+    train_datagen.fit(train_images)
+    val_datagen = ImageDataGenerator()
+    val_datagen.fit(test_images)
 
-        # Set strict left-to-right topology
-        model.startprob_ = start_prob.copy()
-        model.transmat_ = initial_trans.copy()
+    model = build_model(num_classes)
+    model.summary()
+    model.compile(optimizer="adam",
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                  metrics=["accuracy"])
 
-        # Train model parameters
-        model.fit(X, lengths)
-        models[label] = model
+    model.fit(
+        train_datagen.flow(train_images, train_labels, batch_size=args.batch_size),
+        validation_data=val_datagen.flow(test_images, test_labels, batch_size=32),
+        epochs=args.epochs,
+    )
 
-    print("Training complete.")
-    return models
+    scores = model.evaluate(test_images, test_labels)
+    print(f"Test accuracy: {scores[1] * 100:.2f}%")
 
-# ==========================================
-# 5. Full Export Pipeline
-# ==========================================
-def save_all_weights(models_dict, config=CONFIG, output_dir=OUTPUT_DIR):
-    os.makedirs(output_dir, exist_ok=True)
-    os.makedirs(MEM_SUBDIR, exist_ok=True)
+    keras_path = os.path.join(args.out_dir, "emnist_cnn.keras")
+    h5_path = os.path.join(args.out_dir, "emnist_cnn.h5")
+    saved_model_path = os.path.join(args.out_dir, "saved_model")
 
-    prefix = "hmm_emnist"
+    model.save(keras_path)
+    model.save(h5_path)
+    model.export(saved_model_path)  # SavedModel dir, useful for tfjs conversion etc.
 
-    # A. Save Python PKL Object
-    joblib.dump({"config": config, "models": models_dict}, os.path.join(output_dir, f"{prefix}_models.pkl"))
+    print(f"\nSaved:\n  {keras_path}\n  {h5_path}\n  {saved_model_path}/")
 
-    # B. Save Human-Readable JSON File
-    json_data = {"config": config, "models": {}}
-    for label, model in models_dict.items():
-        json_data["models"][label] = {
-            "startprob": model.startprob_.tolist(),
-            "transmat": model.transmat_.tolist(),
-            "means": model.means_.tolist(),
-            "covars": model.covars_.tolist()
-        }
-    with open(os.path.join(output_dir, f"{prefix}_weights.json"), "w") as f:
-        json.dump(json_data, f, indent=4)
 
-    # C. Save Verilog Macro Header (.vh)
-    with open(os.path.join(output_dir, f"{prefix}_params.vh"), "w") as f:
-        f.write("// Auto-generated HMM Macros for FPGA Hardware Architecture\n")
-        for k, v in config.items():
-            f.write(f"`define {k.upper()} {v}\n")
-
-    # D. Save FPGA .mem Files (Transitions, Means, Inverse Variances)
-    scale = config["q_scale"]
-    
-    for label, model in models_dict.items():
-        # 1. Transition Costs (5x5 = 25 words)
-        trans_fixed = float_to_fixed_log(model.transmat_, scale=scale, floor=config["prob_floor"])
-        with open(os.path.join(MEM_SUBDIR, f"trans_matrix_{label}.mem"), "w") as f:
-            for val in trans_fixed.flatten():
-                f.write(f"{val:04X}\n")
-
-        # 2. Gaussian Means (5 states x 4 features = 20 words)
-        means_fixed = np.round(np.abs(model.means_) * scale).astype(np.uint16)
-        with open(os.path.join(MEM_SUBDIR, f"means_{label}.mem"), "w") as f:
-            for val in means_fixed.flatten():
-                f.write(f"{val:04X}\n")
-
-        # 3. Inverse Variances: 1 / (2 * sigma^2) scaled by Q8.8 (20 words)
-        inv_covars = 1.0 / (2.0 * np.maximum(model.covars_, 1e-4))
-        covars_fixed = np.round(inv_covars * scale).astype(np.uint16)
-        with open(os.path.join(MEM_SUBDIR, f"covars_{label}.mem"), "w") as f:
-            for val in covars_fixed.flatten():
-                f.write(f"{val:04X}\n")
-
-    print(f"\n--- Export Complete ---")
-    print(f"Artifacts exported to: {output_dir}")
-    print(f"FPGA memory files (.mem) written to: {MEM_SUBDIR}")
-
-# ==========================================
-# 6. Main Execution
-# ==========================================
 if __name__ == "__main__":
-    dataset = load_emnist_features(CONFIG)
-    models = train_hmm_models(dataset, CONFIG)
-    save_all_weights(models, CONFIG, OUTPUT_DIR)
+    main()
