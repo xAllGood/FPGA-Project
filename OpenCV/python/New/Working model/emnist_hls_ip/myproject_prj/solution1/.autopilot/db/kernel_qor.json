@@ -1,0 +1,575 @@
+{
+    "name": "myproject",
+    "type": "function",
+    "pipelined": "yes",
+    "dataflowed": "yes",
+    "original_ti": 26366,
+    "original_tl": 26381,
+    "calculated_ti": -1,
+    "calculated_tl": -1,
+    "assume_ti": -1,
+    "assume_tl": -1,
+    "CIs": [
+        {
+            "ID": 0,
+            "name": "transpose_array_ap_fixed_28u_array_ap_fixed_16_6_5_3_0_1u_config10_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 1605,
+            "original_tl": 1605,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [
+                {
+                    "ID": 0,
+                    "name": "transpose_array_array_ap_fixed_1u_config10_Pipeline_VITIS_LOOP_45_1",
+                    "type": "function",
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 30,
+                    "original_tl": 30,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": [
+                        {
+                            "name": "VITIS_LOOP_45_1",
+                            "type": "loop",
+                            "trip_count": 28,
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 28,
+                            "original_tl": 29,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [],
+                            "loops": []
+                        }
+                    ]
+                },
+                {
+                    "ID": 1,
+                    "name": "transpose_array_array_ap_fixed_1u_config10_Pipeline_VITIS_LOOP_54_3",
+                    "type": "function",
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 1571,
+                    "original_tl": 1571,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": [
+                        {
+                            "name": "VITIS_LOOP_54_3",
+                            "type": "loop",
+                            "trip_count": 784,
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 1568,
+                            "original_tl": 1569,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [],
+                            "loops": []
+                        }
+                    ]
+                }
+            ],
+            "loops": []
+        },
+        {
+            "ID": 1,
+            "name": "conv_2d_cl_array_ap_fixed_1u_array_ap_fixed_16_6_5_3_0_8u_config27_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 17249,
+            "original_tl": 17249,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": [
+                {
+                    "name": "ReadInputHeight_ReadInputWidth",
+                    "type": "loop",
+                    "trip_count": 784,
+                    "pipelined": "no",
+                    "dataflowed": "no",
+                    "original_ti": 17248,
+                    "original_tl": 17248,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [
+                        {
+                            "ID": 0,
+                            "name": "compute_output_buffer_2d_array_array_ap_fixed_16_6_5_3_0_8u_config27_s",
+                            "type": "function",
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 19,
+                            "original_tl": 19,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [
+                                {
+                                    "ID": 0,
+                                    "name": "shift_line_buffer_array_ap_fixed_16_6_5_3_0_1u_config27_s",
+                                    "type": "function",
+                                    "pipelined": "yes",
+                                    "dataflowed": "no",
+                                    "original_ti": 1,
+                                    "original_tl": 0,
+                                    "calculated_ti": -1,
+                                    "calculated_tl": -1,
+                                    "assume_ti": -1,
+                                    "assume_tl": -1,
+                                    "CIs": [],
+                                    "loops": []
+                                },
+                                {
+                                    "ID": 1,
+                                    "name": "dense_resource_rf_leq_nin_ap_fixed_ap_fixed_16_6_5_3_0_config27_mult_s",
+                                    "type": "function",
+                                    "pipelined": "yes",
+                                    "dataflowed": "no",
+                                    "original_ti": 9,
+                                    "original_tl": 13,
+                                    "calculated_ti": -1,
+                                    "calculated_tl": -1,
+                                    "assume_ti": -1,
+                                    "assume_tl": -1,
+                                    "CIs": [],
+                                    "loops": [
+                                        {
+                                            "name": "ReuseLoop",
+                                            "type": "loop",
+                                            "trip_count": 9,
+                                            "pipelined": "yes",
+                                            "dataflowed": "no",
+                                            "original_ti": 9,
+                                            "original_tl": 13,
+                                            "calculated_ti": -1,
+                                            "calculated_tl": -1,
+                                            "assume_ti": -1,
+                                            "assume_tl": -1,
+                                            "CIs": [],
+                                            "loops": []
+                                        }
+                                    ]
+                                }
+                            ],
+                            "loops": []
+                        }
+                    ],
+                    "loops": []
+                }
+            ]
+        },
+        {
+            "ID": 2,
+            "name": "relu_array_ap_fixed_8u_array_ap_fixed_16_6_5_3_0_8u_ReLU_config12_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 1352,
+            "original_tl": 1354,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": [
+                {
+                    "name": "ReLUActLoop",
+                    "type": "loop",
+                    "trip_count": 676,
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 1352,
+                    "original_tl": 1353,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": []
+                }
+            ]
+        },
+        {
+            "ID": 3,
+            "name": "pooling2d_cl_array_ap_fixed_8u_array_ap_fixed_16_6_5_3_0_8u_config13_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 2031,
+            "original_tl": 2031,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": [
+                {
+                    "name": "ReadInputHeight_ReadInputWidth",
+                    "type": "loop",
+                    "trip_count": 676,
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 2028,
+                    "original_tl": 2030,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": []
+                }
+            ]
+        },
+        {
+            "ID": 4,
+            "name": "conv_2d_cl_array_ap_fixed_8u_array_ap_fixed_16_6_5_3_0_16u_config28_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 26365,
+            "original_tl": 26365,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": [
+                {
+                    "name": "ReadInputHeight_ReadInputWidth",
+                    "type": "loop",
+                    "trip_count": 169,
+                    "pipelined": "no",
+                    "dataflowed": "no",
+                    "original_ti": 26364,
+                    "original_tl": 26364,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [
+                        {
+                            "ID": 0,
+                            "name": "compute_output_buffer_2d_array_array_ap_fixed_16_6_5_3_0_16u_config28_s",
+                            "type": "function",
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 153,
+                            "original_tl": 153,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [
+                                {
+                                    "ID": 0,
+                                    "name": "shift_line_buffer_array_ap_fixed_16_6_5_3_0_8u_config28_s",
+                                    "type": "function",
+                                    "pipelined": "yes",
+                                    "dataflowed": "no",
+                                    "original_ti": 1,
+                                    "original_tl": 0,
+                                    "calculated_ti": -1,
+                                    "calculated_tl": -1,
+                                    "assume_ti": -1,
+                                    "assume_tl": -1,
+                                    "CIs": [],
+                                    "loops": []
+                                },
+                                {
+                                    "ID": 1,
+                                    "name": "dense_resource_rf_gt_nin_rem0_ap_fixed_ap_fixed_16_6_5_3_0_config28_mult_s",
+                                    "type": "function",
+                                    "pipelined": "yes",
+                                    "dataflowed": "no",
+                                    "original_ti": 144,
+                                    "original_tl": 147,
+                                    "calculated_ti": -1,
+                                    "calculated_tl": -1,
+                                    "assume_ti": -1,
+                                    "assume_tl": -1,
+                                    "CIs": [],
+                                    "loops": [
+                                        {
+                                            "name": "ReuseLoop",
+                                            "type": "loop",
+                                            "trip_count": 144,
+                                            "pipelined": "yes",
+                                            "dataflowed": "no",
+                                            "original_ti": 144,
+                                            "original_tl": 147,
+                                            "calculated_ti": -1,
+                                            "calculated_tl": -1,
+                                            "assume_ti": -1,
+                                            "assume_tl": -1,
+                                            "CIs": [],
+                                            "loops": []
+                                        }
+                                    ]
+                                }
+                            ],
+                            "loops": []
+                        }
+                    ],
+                    "loops": []
+                }
+            ]
+        },
+        {
+            "ID": 5,
+            "name": "relu_array_ap_fixed_16u_array_ap_fixed_16_6_5_3_0_16u_ReLU_config15_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 121,
+            "original_tl": 125,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": [
+                {
+                    "name": "ReLUActLoop",
+                    "type": "loop",
+                    "trip_count": 121,
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 121,
+                    "original_tl": 124,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": []
+                }
+            ]
+        },
+        {
+            "ID": 6,
+            "name": "pooling2d_cl_array_array_ap_fixed_16_6_5_3_0_16u_config16_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 366,
+            "original_tl": 366,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": [
+                {
+                    "name": "ReadInputHeight_ReadInputWidth",
+                    "type": "loop",
+                    "trip_count": 121,
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 363,
+                    "original_tl": 365,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": []
+                }
+            ]
+        },
+        {
+            "ID": 7,
+            "name": "dense_array_ap_fixed_16u_array_ap_fixed_16_6_5_3_0_32u_config25_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 834,
+            "original_tl": 834,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [
+                {
+                    "ID": 0,
+                    "name": "dense_array_array_ap_fixed_16_6_5_3_0_32u_config25_Pipeline_DataPrepare",
+                    "type": "function",
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 27,
+                    "original_tl": 27,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": [
+                        {
+                            "name": "DataPrepare",
+                            "type": "loop",
+                            "trip_count": 25,
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 25,
+                            "original_tl": 26,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [],
+                            "loops": []
+                        }
+                    ]
+                },
+                {
+                    "ID": 1,
+                    "name": "dense_resource_rf_gt_nin_rem0_ap_fixed_ap_fixed_16_6_5_3_0_config25_s",
+                    "type": "function",
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 800,
+                    "original_tl": 803,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": [
+                        {
+                            "name": "ReuseLoop",
+                            "type": "loop",
+                            "trip_count": 800,
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 800,
+                            "original_tl": 803,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [],
+                            "loops": []
+                        }
+                    ]
+                }
+            ],
+            "loops": []
+        },
+        {
+            "ID": 8,
+            "name": "normalize_array_ap_fixed_32u_array_ap_fixed_16_6_5_3_0_32u_config23_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 2,
+            "original_tl": 2,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": []
+        },
+        {
+            "ID": 9,
+            "name": "relu_array_ap_fixed_32u_array_ap_fixed_16_6_5_3_0_32u_ReLU_config20_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 2,
+            "original_tl": 2,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": []
+        },
+        {
+            "ID": 10,
+            "name": "dense_array_ap_fixed_32u_array_ap_fixed_16_6_5_3_0_47u_config26_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 39,
+            "original_tl": 39,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [
+                {
+                    "ID": 0,
+                    "name": "dense_resource_rf_leq_nin_ap_fixed_ap_fixed_16_6_5_3_0_config26_s",
+                    "type": "function",
+                    "pipelined": "yes",
+                    "dataflowed": "no",
+                    "original_ti": 32,
+                    "original_tl": 36,
+                    "calculated_ti": -1,
+                    "calculated_tl": -1,
+                    "assume_ti": -1,
+                    "assume_tl": -1,
+                    "CIs": [],
+                    "loops": [
+                        {
+                            "name": "ReuseLoop",
+                            "type": "loop",
+                            "trip_count": 32,
+                            "pipelined": "yes",
+                            "dataflowed": "no",
+                            "original_ti": 32,
+                            "original_tl": 36,
+                            "calculated_ti": -1,
+                            "calculated_tl": -1,
+                            "assume_ti": -1,
+                            "assume_tl": -1,
+                            "CIs": [],
+                            "loops": []
+                        }
+                    ]
+                }
+            ],
+            "loops": []
+        },
+        {
+            "ID": 11,
+            "name": "normalize_array_ap_fixed_47u_array_ap_fixed_16_6_5_3_0_47u_config24_s",
+            "type": "function",
+            "pipelined": "yes",
+            "dataflowed": "no",
+            "original_ti": 3,
+            "original_tl": 3,
+            "calculated_ti": -1,
+            "calculated_tl": -1,
+            "assume_ti": -1,
+            "assume_tl": -1,
+            "CIs": [],
+            "loops": []
+        }
+    ],
+    "loops": []
+}
