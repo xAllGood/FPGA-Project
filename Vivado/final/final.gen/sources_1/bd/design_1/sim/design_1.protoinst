@@ -1,0 +1,72 @@
+{
+	"version": "1.0",
+	"modules": {
+		"design_1": {
+			"proto_instances": {
+				"/axis_dwidth_converter_0/M_AXIS": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "m_axis_tdata[447:0]"},
+						"TKEEP": { "actual": "m_axis_tkeep[55:0]"},
+						"TLAST": { "actual": "m_axis_tlast"},
+						"TREADY": { "actual": "m_axis_tready"},
+						"TVALID": { "actual": "m_axis_tvalid"}
+					}
+				},
+				"/axis_dwidth_converter_0/S_AXIS": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "aclk"},
+						"ARESETN": { "actual": "aresetn"},
+						"TDATA": { "actual": "s_axis_tdata[15:0]"},
+						"TLAST": { "actual": "s_axis_tlast"},
+						"TREADY": { "actual": "s_axis_tready"},
+						"TVALID": { "actual": "s_axis_tvalid"}
+					}
+				},
+				"/hw_argmax_0/interface_axis": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "clk"},
+						"TDATA": { "actual": "tdata[751:0]"},
+						"TREADY": { "actual": "tready"},
+						"TVALID": { "actual": "tvalid"}
+					}
+				},
+				"/image_controller_0/global_in": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "clk"},
+						"ARESETN": { "actual": "resetn"},
+						"TDATA": { "actual": "global_in_TDATA[15:0]"},
+						"TLAST": { "actual": "global_in_TLAST"},
+						"TREADY": { "actual": "global_in_TREADY"},
+						"TVALID": { "actual": "global_in_TVALID"}
+					}
+				},
+				"/myproject_0/global_in": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "ap_clk"},
+						"ARESETN": { "actual": "ap_rst_n"},
+						"TDATA": { "actual": "global_in_TDATA[447:0]"},
+						"TREADY": { "actual": "global_in_TREADY"},
+						"TVALID": { "actual": "global_in_TVALID"}
+					}
+				},
+				"/myproject_0/layer24_out": {
+					"interface": "xilinx.com:interface:axis:1.0",
+					"ports": {
+						"ACLK": { "actual": "ap_clk"},
+						"ARESETN": { "actual": "ap_rst_n"},
+						"TDATA": { "actual": "layer24_out_TDATA[751:0]"},
+						"TREADY": { "actual": "layer24_out_TREADY"},
+						"TVALID": { "actual": "layer24_out_TVALID"}
+					}
+				}
+			}
+		}
+	}
+}

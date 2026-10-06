@@ -1,7 +1,0 @@
-tensorflow>=2.13
-emnist
-python-mnist
-opencv-python
-numpy
-matplotlib
-Pillow
