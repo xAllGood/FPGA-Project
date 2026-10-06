@@ -13,6 +13,9 @@ Xil/
 hd_visual/
 _ide/
 OpenCV/python/data/
+OpenCV/python/New/data/
+OpenCV/python/New/emnist_hls_ip/
+OpenCV/python/New/Working model/
 OpenCV/python/tf_env/
 OpenCV/python/iam-handwritten-forms-dataset/
 
